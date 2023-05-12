@@ -37,8 +37,9 @@ KinanCity-core main class accepts configuration from :
 **Note :**  A usage help is shown if called without any parameters or an invalid set of parameters.
 
 **About Captchas**  
-KinanCity needs to solve captchas and require a provider that will solve all captchas required. Providers requires an **apiKey** that must be given each time or saved in the config file. If you want to help, please use our referral links for these 3 major providers.
+KinanCity needs to solve captchas and require a provider that will solve all captchas required. Providers requires an **apiKey** that must be given each time or saved in the config file. If you want to help, please use our referral links for these major providers. Price and performances may vary, please refer to discord feedback to make your choice. Some provider may also have trial offers.
 - 2captcha : https://2captcha.com/?from=2219901
+- Capsolver : https://dashboard.capsolver.com/passport/register?inviteCode=9q9A1XnPlPeu
 - ImageTypers : http://www.imagetyperz.com/
 - Anti Captcha : http://getcaptchasolution.com/2yh6yddsff
 
@@ -94,6 +95,7 @@ will start Kinan Core in inderactive mode, where just have to follow prompts.
 
 # Additional parameters :
 
+* `-cp <provider>` or `-captchaProvider <captchaKey>` to chose a provider between imageTypers|2captcha|antiCaptcha|capsolver|captchaai|local
 * `-ck <captchaKey>` or `-captchaKey <captchaKey>` to give a specific apiKey add
 * `-px [proxy1,proxy2,...]` or `-proxies [proxy1,proxy2,...]` to use multiple proxies.  
 Or set them in the config file as `proxies=`  
