@@ -1,68 +1,25 @@
-# KinanCity
+# KinanCity - CaptchaAI Fork
 
-[![Last Version](https://img.shields.io/badge/version-1.0.0--Alpha1-brightgreen.svg)](https://github.com/drallieiv/KinanCity/releases/latest)
-[![Build Status](https://travis-ci.org/drallieiv/KinanCity.svg?branch=master)](https://travis-ci.org/drallieiv/KinanCity)
+There's CapSolver (previously known as captchaai.org) and captchaai.com. Kinan supports CapSolver, but not CaptchaAi, 
+which is the cheapest Captcha solver I'm aware of.
 
-Any issues with KinanCity, or you just want to talk about the project ? Go to [our discord server]( http://discord.gg/3jkb3zA)
+When I originally set up Kinan, I compared my options and bought a captchaai.com license, thinking it's supported. 
+Turned out only captchaai.org was supported, not captchaai.com. So I quickly hacked together this mod to save me my 15€. 
+I later talked to Kinan's maintainer, who didn't see the need to implement it properly. 
+Since then, this mod has risen in popularity, so I decided to make the fork public. 
 
-## Were is Kinan City ?
+I've run this for a month, and it went smoothly most of the time. But sometimes it'll crash. It's really just hacked 
+together.
 
-**Kinan City** (キナンシティ) is one of the cities of the Kalos region in Pokemon XY games and anime.
-It is known as **Kiloude City** is the English version and **Batisques** in French.
+Please do not create big PRs on this. If you have the time, please make a proper implementation for original Kinan.
 
-Kinan City is known for it **Friend Safari** where many trainer comes to find pokemon. This is a good place if you want to meet a **lot of new trainers**.
+# Setup
 
-## How does one get a Pokemon Trainer Club account ?
+captchaai functionality is injected into the 2captcha module. So your config just has to look like this:
 
-In order to get a PTC account you need to go the pokemon website and request to create a new account, and complete theses steps.
-
-![](docs/0_PTCsignup.png)
-
-You then first have to fill some personal informations such as your country and birthdate. Then information about the account you want.
-
-You also need to complete a Captcha task to prove that you are a human.
-
-Once the subscription is done, the account still needs to be activated in the next 48 hours. An email will be sent to the given address with a link. You need to follow that link to activate the account.
-
-NOTE : You cannot use the same email twice for multiple PTC account, they each need their own email address.
-
-Theses steps must be done for each PTC account you want to create.
-
-## What does KinanCity do ?
-
-**KinanCity** is a tool that automates the creation of Pokemon Trainer Accounts and contains multiple modules when you need to create a lot of accounts, fast.
-
-- **KinanCity-core** : is the core module that can also be used in command line. [more info here](KinanCity-core/README.md)
-- **KinanCity-mail** : is a minimalist Email server that does auto-activation. [more info here](KinanCity-mail/README.md)
-
-## Why another tool ?
-
-There are already many accout creator with each their specific features.  
-KinanCity was born by taking the best features of them to have a complete solution.
-
-The advantages of KinanCity :
-* is cross platform compatible (Unix, Windows, Mac)
-* can work on headless systems without any need of a web driver
-* does parallel processing to be faster
-* can use multiple proxies to go over the limit of 20 accounts per hour (5 accounts per 15 minutes)
-
-## How to install KinanCity ?
-
-If you just want to **use Kinan Core and/or Kinan Mail**, you can get the last stable build [here](https://github.com/drallieiv/KinanCity/releases)
-
-or
-
-To use the very last build of each module, you can **download** the latest version of each maven module [here](https://github.com/drallieiv/KinanCity/packages)
-
-or  
-
-You can **compile** it yourself using a **maven** goal : `mvn package`  
-
-**KinanCity** modules are java applications and all you need is a Java 8 Runtime Environment on your system.
-
-### References
-
-KinanCity is born from previous projects :
-
-* [pikaptcha](https://github.com/sriyegna/Pikaptcha) by [sriyegna](https://github.com/sriyegna)
-* [PalletTown](https://github.com/novskey/PalletTown) by [novskey](https://github.com/novskey)
+```properties
+captcha.provider=2captcha
+captcha.key=dfe2cfca16364a4986b88cb345b1ecbb
+captchaMaxParallelChallenges=5
+```
+`captchaMaxParallelChallenges` should be set automatically, but it doesn't hurt to put in your thread count.
