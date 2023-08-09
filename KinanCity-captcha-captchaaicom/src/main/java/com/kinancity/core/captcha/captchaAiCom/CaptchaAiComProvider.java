@@ -1,4 +1,4 @@
-package com.kinancity.core.captcha.twoCaptcha;
+package com.kinancity.core.captcha.captchaAiCom;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -30,7 +30,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-public class TwoCaptchaProvider extends CaptchaProvider {
+public class CaptchaAiComProvider extends CaptchaProvider {
 
 	private static final String JSON_RESPONSE = "request";
 
@@ -41,11 +41,11 @@ public class TwoCaptchaProvider extends CaptchaProvider {
 	/**
 	 * List of 2captcha Challenges sent
 	 */
-	private List<TwoCaptchaChallenge> challenges = new ArrayList<>();
+	private List<CaptchaAiComChallenge> challenges = new ArrayList<>();
 
 	private boolean runFlag = true;
 
-	private static final String HTTP_ERROR_MSG = "Could not reach 2captcha servers";
+	private static final String HTTP_ERROR_MSG = "Could not reach captchaai.com";
 
 	/**
 	 * List of 2 captcha Response codes we use
@@ -159,57 +159,65 @@ public class TwoCaptchaProvider extends CaptchaProvider {
 				// Currently waiting for captcha
 				logger.debug("Check status of {} captchas", challengesToResolve.size());
 
-				for (TwoCaptchaChallenge challenge: challengesToResolve) {
-					String captchaId = challenge.getCaptchaId();
-					logger.info("captchaIds {}", captchaId);
+				// Build a list of chucks
+				List<List<TwoCaptchaChallenge>> batchList = new ArrayList<>();
 
-					Request resolveRequest = buildReceiveCaptchaRequest(captchaId);
-
-					try (Response solveResponse = captchaClient.newCall(resolveRequest).execute()) {
-						String body = solveResponse.body().string();
-
-						try {
-							JsonObject jsonResponse = Json.createReader(new StringReader(body)).readObject();
-							String response = jsonResponse.getString(JSON_RESPONSE);
-
-							if (isValidResponse(jsonResponse)) {
-								logger.info("response : {}", body);
-
-								String[] responses = jsonResponse.getString(JSON_RESPONSE).split("\\|");
-
-								if (responses.length != batch.size()) {
-									logger.error("Number of responses [{}] do not match number of requests [{}] : {}", responses.length, batch.size(), jsonResponse.getString(JSON_RESPONSE));
-									logger.info("Switch to MissmatchRecovery mode");
-									missmatchRecovery = true;
-									recoveryModeTimer = new StopWatch();
-									recoveryModeTimer.start();
-								} else {
-									if (missmatchRecovery && recoveryModeTimer.getTime() < minTimeForRecovery * 1000) {
-										logger.info("Disable MissmatchRecovery mode");
-										missmatchRecovery = false;
-										recoveryModeTimer.stop();
-									}
-									int i = 0;
-									for (TwoCaptchaChallenge challenge : batch) {
-										String response = responses[i];
-										manageChallengeResponse(challenge, response);
-										i++;
-									}
-								}
-
-								logger.debug("Remaining Challenges : {}", challenges.stream().map(c -> c.getCaptchaId()).collect(Collectors.joining(",")));
-
-							} else {
-								logger.error("Invalid response : {}", body);
-							}
-						} catch (JsonParsingException e) {
-							logger.error("2captcha response was not a valid JSON : {}", body);
-						}
-
-					} catch (Exception e) {
-						logger.error("Error while calling RES 2captcha : {}", e.getMessage());
-					}
+				if (missmatchRecovery) {
+					logger.info("MissmatchRecovery only check for {} captcha at once max", missmatchRecoverySize);
+					batchList.add(challengesToResolve.stream().limit(missmatchRecoverySize).collect(Collectors.toList()));
+				}else {
+					logger.debug("Normal mode only check for {} captcha at once max", normalBatchSize);
+					Set<TwoCaptchaChallenge> fullList = challengesToResolve.stream().collect(Collectors.toSet());
+					batchList.addAll(ListUtils.partition(fullList.stream().collect(Collectors.toList()), normalBatchSize));
 				}
+
+				for (List<TwoCaptchaChallenge> batch : batchList) {
+            for (TwoCaptchaChallenge challengeHack: batch) {
+              String captchaId = challengeHack.getCaptchaId();
+    					logger.info("captchaIds {}", captchaId);
+
+    					Request resolveRequest = buildReceiveCaptchaRequest(captchaId);
+
+    					try (Response solveResponse = captchaClient.newCall(resolveRequest).execute()) {
+    						String body = solveResponse.body().string();
+
+    						try {
+    							JsonObject jsonResponse = Json.createReader(new StringReader(body)).readObject();
+    							if (isValidResponse(jsonResponse)) {
+    								logger.info("response : {}", body);
+
+    								String[] responses = jsonResponse.getString(JSON_RESPONSE).split("\\|");
+
+    								if (responses.length != 1) {
+    									logger.error("Number of responses [{}] do not match number of requests [{}] : {}", responses.length, batch.size(), jsonResponse.getString(JSON_RESPONSE));
+    									logger.info("Switch to MissmatchRecovery mode");
+    									missmatchRecovery = true;
+    									recoveryModeTimer = new StopWatch();
+    									recoveryModeTimer.start();
+    								} else {
+    									if (missmatchRecovery && recoveryModeTimer.getSplitTime() < minTimeForRecovery * 1000) {
+    										logger.info("Disable MissmatchRecovery mode");
+    										missmatchRecovery = false;
+    									}
+    									String response = responses[0];
+   										manageChallengeResponse(challengeHack, response);
+    								}
+
+    								logger.debug("Remaining Challenges : {}", challenges.stream().map(c -> c.getCaptchaId()).collect(Collectors.joining(",")));
+
+    							} else {
+    								logger.error("Invalid response : {}", body);
+    							}
+    						} catch (JsonParsingException e) {
+    							logger.error("2captcha response was not a valid JSON : {}", body);
+    						}
+
+    					} catch (IOException e) {
+    						logger.error("Error while calling RES 2captcha : {}", e.getMessage());
+    					}
+             }
+				}
+
 			}
 
 			// Update queue size
@@ -230,23 +238,22 @@ public class TwoCaptchaProvider extends CaptchaProvider {
 				for (int i = 0; i < nbToRequest; i++) {
 					try (Response sendResponse = captchaClient.newCall(sendRequest).execute()) {
 						String body = sendResponse.body().string();
-            			logger.info(body);
+            logger.info(body);
 						try {
 							JsonObject jsonResponse = Json.createReader(new StringReader(body)).readObject();
 
-							if (jsonResponse.getInt(JSON_STATUS) == 1) {
+							if (isValidResponse(jsonResponse)) {
 								int captchaIdInt = jsonResponse.getInt(JSON_RESPONSE);
-                				String captchaId = String.valueOf(captchaIdInt);
+                String captchaId = String.valueOf(captchaIdInt);
 								logger.info("Requested new Captcha, id : {}", captchaId);
 								challenges.add(new TwoCaptchaChallenge(captchaId));
 							} else {
-								String reason = jsonResponse.getString(JSON_RESPONSE);
-								logger.info("Request response: " + reason);
+								logger.error("KO response when sending IN 2captcha : {}", body);
 							}
 						} catch (JsonParsingException e) {
 							logger.error("2captcha response was not a valid JSON : {}", body);
 						}
-					} catch (Exception e) {
+					} catch (IOException e) {
 						logger.error("Error while calling IN 2captcha : {}", e.getMessage());
 					}
 				}
@@ -336,13 +343,13 @@ public class TwoCaptchaProvider extends CaptchaProvider {
 				throw new TwoCaptchaConfigurationException("Other Error : " + body);
 			}
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			throw new TechnicalException(HTTP_ERROR_MSG, e);
 		}
 	}
 
 	public boolean isValidResponse(JsonObject jsonResponse) {
-		return jsonResponse.getInt(JSON_STATUS) >= 0;
+		return jsonResponse.getInt(JSON_STATUS) == 1;
 	}
 
 	/**
