@@ -7,24 +7,13 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>kinancity-captcha-deathbycaptcha</artifactId>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
-
-
+    <artifactId>kinancity-captcha-2captcha-basic</artifactId>
     <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.kinancity</groupId>
             <artifactId>kinancity-captcha-api</artifactId>
             <version>2.1.19-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Lombok -->
@@ -49,11 +38,15 @@
         </dependency>
 
         <dependency>
-            <groupId>uk.org.lidalia</groupId>
-            <artifactId>sysout-over-slf4j</artifactId>
-            <version>1.0.2</version>
+            <groupId>com.github.2captcha</groupId>
+            <artifactId>2captcha-java</artifactId>
+            <version>1.1.1</version>
         </dependency>
-
     </dependencies>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
 
 </project>
